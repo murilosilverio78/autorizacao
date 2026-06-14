@@ -11,7 +11,8 @@ const navigationLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/responsaveis", label: "Responsáveis" },
   { href: "/alunos", label: "Alunos" },
-  { href: "/gerar-autorizacao", label: "Gerar Autorização" },
+  { href: "/templates", label: "Templates" },
+  { href: "/gerar", label: "Gerar Autorização" },
 ];
 
 export function DashboardGuard({ children }: { children: React.ReactNode }) {
