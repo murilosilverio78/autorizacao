@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
-import { createTemplate } from "@/lib/templates";
+import { createTemplateAdmin } from "@/lib/templates-admin";
 
 const prompt = `Você receberá um formulário de autorização escolar em PDF.
 Extraia APENAS o texto fixo do documento — ou seja, todo o texto que NÃO são campos a serem preenchidos.
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const templateId = await createTemplate({ nome, textoFixo }, userId);
+    const templateId = await createTemplateAdmin({ nome, textoFixo }, userId);
 
     return NextResponse.json({ templateId, textoFixo });
   } catch (error) {

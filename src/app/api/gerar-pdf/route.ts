@@ -1,47 +1,10 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, type PDFFont } from "pdf-lib";
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
-
-type Qualidade =
-  | "MAE"
-  | "PAI"
-  | "TUTOR"
-  | "GUARDIAO"
-  | "REPRESENTANTE_LEGAL";
-
-type TemplateData = {
-  userId: string;
-  nome: string;
-  textoFixo: string;
-};
-
-type ResponsavelData = {
-  userId: string;
-  nomeCompleto: string;
-  rg: string;
-  rgOrgaoExpedidor: string;
-  rgDataExpedicao: string;
-  cpf: string;
-  endereco: string;
-  cidade: string;
-  uf: string;
-  telefone: string;
-  qualidade: Qualidade;
-};
-
-type AlunoData = {
-  userId: string;
-  nomeCompleto: string;
-  dataNascimento: string;
-  naturalidade: string;
-  rg: string;
-  rgOrgaoExpedidor: string;
-  rgDataExpedicao: string;
-  cpf: string;
-  endereco: string;
-  cidade: string;
-  uf: string;
-};
+import { getAlunoAdmin } from "@/lib/alunos-admin";
+import { adminAuth } from "@/lib/firebase-admin";
+import { getResponsavelAdmin } from "@/lib/responsaveis-admin";
+import type { Qualidade } from "@/lib/responsaveis";
+import { getTemplatesAdmin } from "@/lib/templates-admin";
 
 const qualidadeLabels: Record<Qualidade, string> = {
   MAE: "mãe",
@@ -78,26 +41,6 @@ async function getUserId(request: Request) {
 
   const decodedToken = await adminAuth.verifyIdToken(token);
   return decodedToken.uid;
-}
-
-async function getOwnedDocument<T>(
-  collectionName: string,
-  id: string,
-  userId: string,
-) {
-  const snapshot = await adminDb.collection(collectionName).doc(id).get();
-
-  if (!snapshot.exists) {
-    return null;
-  }
-
-  const data = snapshot.data() as T & { userId?: string };
-
-  if (data.userId !== userId) {
-    return null;
-  }
-
-  return data as T;
 }
 
 function formatCpf(cpf: string) {
@@ -217,15 +160,12 @@ export async function POST(request: Request) {
       );
     }
 
-    const [template, responsavel, aluno] = await Promise.all([
-      getOwnedDocument<TemplateData>("templates", templateId, userId),
-      getOwnedDocument<ResponsavelData>(
-        "responsaveis",
-        responsavelId,
-        userId,
-      ),
-      getOwnedDocument<AlunoData>("alunos", alunoId, userId),
+    const [templates, responsavel, aluno] = await Promise.all([
+      getTemplatesAdmin(userId),
+      getResponsavelAdmin(responsavelId, userId),
+      getAlunoAdmin(alunoId, userId),
     ]);
+    const template = templates.find((item) => item.id === templateId) ?? null;
 
     if (!template || !responsavel || !aluno) {
       return NextResponse.json(
