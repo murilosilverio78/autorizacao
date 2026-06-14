@@ -11,7 +11,6 @@ const navigationLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/responsaveis", label: "Responsáveis" },
   { href: "/alunos", label: "Alunos" },
-  { href: "/templates", label: "Templates" },
   { href: "/gerar", label: "Gerar Autorização" },
 ];
 
